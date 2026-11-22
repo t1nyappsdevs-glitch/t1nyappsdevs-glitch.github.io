@@ -151,12 +151,12 @@
           <h1>Gas Locator</h1>
         </div>
       </div>
-      <div class="checked-pill"><span>Checked</span>Nov 21 2026</div>
+      <div class="checked-pill"><span>Checked</span>Nov 22 2026</div>
     </div>
     <div class="hero-stats">
       <div class="stat">
         <div class="stat-label">Lowest regular found</div>
-        <div class="stat-value">$3.159 <small>at Costco</small></div>
+        <div class="stat-value">$3.129 <small>at Costco</small></div>
       </div>
       <div class="stat">
         <div class="stat-label">Common price near home</div>
@@ -189,13 +189,13 @@
     <p id="sortNote">Snapshot near home in Marana and Tucson. Sorted by lowest price until location is allowed, then by the best mix of price and distance.</p>
   </div>
 
-  <div class="note-box"><strong>Checked Nov 21 2026.</strong> Prices are crowd sourced and the pump price is final proof. Always confirm at the pump before you fill up.</div>
+  <div class="note-box"><strong>Checked Nov 22 2026.</strong> Prices are crowd sourced and the pump price is final proof. Always confirm at the pump before you fill up.</div>
 
   <div class="toggle" role="group" aria-label="Fuel grade">
     <button type="button" id="btnRegular" aria-pressed="true">Regular</button>
     <button type="button" id="btnPremium" aria-pressed="false">Premium</button>
   </div>
-  <p class="toggle-caption" id="toggleCaption">Showing regular prices checked on Nov 21 2026.</p>
+  <p class="toggle-caption" id="toggleCaption">Showing regular prices checked on Nov 22 2026.</p>
 
   <p class="filter-label" id="sortLabel">Sort by</p>
   <div class="toggle sort-toggle" role="group" aria-labelledby="sortLabel">
@@ -212,7 +212,7 @@
 
   <div class="list" id="stationList"></div>
 
-  <p class="foot"><strong>About this snapshot.</strong> Prices above were checked on Nov 21 2026 near home. A station that says price not checked simply had no checked price for that grade on that day. Tap Directions on any station to open Google Maps directions to its address. Distances appear after you tap Use My Location or pick a sort that uses distance and allow the location prompt, and they are approximate. GasBuddy shows its prices only inside its app to signed in members, so this page uses the public sources named on each card.</p>
+  <p class="foot"><strong>About this snapshot.</strong> Prices above were checked on Nov 22 2026 near home. A station that says price not checked simply had no checked price for that grade on that day. Tap Directions on any station to open Google Maps directions to its address. Distances appear after you tap Use My Location or pick a sort that uses distance and allow the location prompt, and they are approximate. GasBuddy shows its prices only inside its app to signed in members, so this page uses the public sources named on each card.</p>
 
 </div>
 
@@ -220,14 +220,14 @@
 var COMMON_REGULAR = 3.699;
 
 var STATIONS = [
-  { name: "Costco", brand: "Costco", address: "3901 W Costco Dr, Tucson", city: "Tucson", regular: 3.159, premium: 3.799, extra: "", source: "Costco warehouse page", lat: 32.326447, lng: -111.047431 },
+  { name: "Costco", brand: "Costco", address: "3901 W Costco Dr, Tucson", city: "Tucson", regular: 3.129, premium: 3.799, extra: "", source: "Costco warehouse page", lat: 32.326447, lng: -111.047431 },
   { name: "Frys Fuel", brand: "Frys", address: "10510 N La Canada Dr, Tucson", city: "Tucson", regular: 3.359, premium: null, extra: "", source: "iExit listing", lat: 32.4026, lng: -111.0145 },
   { name: "Circle K", brand: "Circle K", address: "10410 N La Canada Dr, Tucson", city: "Tucson", regular: 3.399, premium: null, extra: "", source: "iExit listing", lat: 32.4010, lng: -111.0140 },
-  { name: "Maverik", brand: "Maverik", address: "9171 W Tangerine Rd, Marana", city: "Marana", regular: 3.699, premium: null, extra: "", source: "iExit listing", lat: 32.4180, lng: -111.0960 },
-  { name: "QuikTrip", brand: "QuikTrip", address: "9400 W Tangerine Rd, Marana", city: "Marana", regular: 3.699, premium: null, extra: "", source: "iExit listing", lat: 32.4183, lng: -111.1040 },
+  { name: "Maverik", brand: "Maverik", address: "9171 W Tangerine Rd, Marana", city: "Marana", regular: 3.699, premium: 4.29, extra: "", source: "iExit listing", lat: 32.4180, lng: -111.0960 },
+  { name: "QuikTrip", brand: "QuikTrip", address: "9400 W Tangerine Rd, Marana", city: "Marana", regular: 3.699, premium: 4.34, extra: "", source: "iExit listing", lat: 32.4183, lng: -111.1040 },
   { name: "Speedway", brand: "Speedway", address: "12030 N Dove Mountain Blvd, Marana", city: "Marana", regular: 3.699, premium: 4.399, extra: "Midgrade $4.099 and diesel $5.729 were also checked at this station.", source: "Speedway station listing", lat: 32.4530, lng: -111.0910 },
   { name: "Circle K", brand: "Circle K", address: "11403 W Tangerine Rd, Marana", city: "Marana", regular: 3.699, premium: null, extra: "", source: "iExit listing", lat: 32.4175, lng: -111.1470 },
-  { name: "Circle K", brand: "Circle K", address: "13961 N Sandario Rd, Marana", city: "Marana", regular: 3.699, premium: null, extra: "", source: "iExit listing", lat: 32.3520, lng: -111.2040 }
+  { name: "Circle K", brand: "Circle K", address: "13961 N Sandario Rd, Marana", city: "Marana", regular: 3.699, premium: 4.39, extra: "", source: "iExit listing", lat: 32.3520, lng: -111.2040 }
 ];
 
 var BRANDS = ["All", "Costco", "Frys", "Circle K", "Maverik", "QuikTrip", "Speedway"];
@@ -402,8 +402,8 @@ function render(){
   listEl.innerHTML = html;
 
   captionEl.textContent = grade === "regular"
-    ? "Showing regular prices checked on Nov 21 2026."
-    : "Showing premium prices checked on Nov 21 2026. Price not checked means no premium price was checked for that station.";
+    ? "Showing regular prices checked on Nov 22 2026."
+    : "Showing premium prices checked on Nov 22 2026. Price not checked means no premium price was checked for that station.";
 
   sortNoteEl.textContent = sortNoteText();
   sortCaptionEl.textContent = sortCaptionText();
