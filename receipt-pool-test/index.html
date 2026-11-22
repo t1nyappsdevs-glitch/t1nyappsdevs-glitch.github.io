@@ -212,7 +212,7 @@ function openForm(id){
 }
 function drawFormChips(){
   chips($('payerChips'), S.roster, [S.form.payer], true, function(){ S.form.payer = lastChip($('payerChips')); syncPayer(); });
-  chips($('partChips'), S.roster, S.form.participants, false, function(){ S.form.participants = onChips($('partChips')); });
+  chips($('partChips'), S.roster, S.form.participants, false, function(){ S.form.participants = onChips($('partChips')); S.form.items.forEach(function(it){ it.shared_by = (it.shared_by || []).filter(function(n){ return S.form.participants.indexOf(n) >= 0; }); if (!it.shared_by.length) it.shared_by = S.form.participants.slice(); }); drawItems(); });
   chips($('catChips'), CATS.map(function(c){ return c[0]; }), [S.form.category || 'Other'], true, function(){ S.form.category = lastChip($('catChips')); drawFormChips(); });
 }
 function onChips(el){ var out = []; el.querySelectorAll('.chip.on').forEach(function(c){ out.push(c.textContent); }); return out; }
