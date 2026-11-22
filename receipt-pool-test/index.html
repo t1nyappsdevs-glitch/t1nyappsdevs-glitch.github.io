@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Receipt Pool TEST</title>
+<style>
+  :root{ --accent:#e8821e; --bg:#fef9f0; --ink:#2b2118; --muted:#8a7a68; --line:#ead9c2; --card:#fffdf8; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; font-family:system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background:var(--bg); color:var(--ink); }
+  header{ background:var(--accent); color:#fff; padding:14px 16px; }
+  header h1{ margin:0; font-size:20px; }
+  header p{ margin:4px 0 0; font-size:13px; opacity:.92; }
+  main{ max-width:640px; margin:0 auto; padding:16px; }
+  .card{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px; margin-bottom:14px; }
+  button{ font:inherit; border-radius:10px; border:1px solid var(--line); background:#fff; padding:9px 14px; cursor:pointer; }
+  button.primary{ background:var(--accent); border-color:var(--accent); color:#fff; font-weight:600; }
+  button:disabled{ opacity:.55; cursor:default; }
+  input[type=text], input[type=password], input[type=number]{ font:inherit; width:100%; padding:10px; border:1px solid var(--line); border-radius:10px; background:#fff; }
+  label.f{ display:block; font-size:13px; color:var(--muted); margin:10px 0 4px; }
+  .row{ display:flex; gap:8px; align-items:center; }
+  .grow{ flex:1; }
+  .monthbar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  .monthbar h2{ margin:0; font-size:18px; }
+  .summary-row{ display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--line); }
+  .summary-row:last-child{ border-bottom:none; }
+  .metrics{ font-size:13px; color:var(--muted); }
+  .metrics b{ color:var(--ink); }
+  .positive{ color:#1c7c34; } .negative{ color:#b3261e; }
+  .r-head{ display:flex; justify-content:space-between; align-items:baseline; }
+  .r-place{ font-weight:700; font-size:16px; }
+  .r-meta{ font-size:13px; color:var(--muted); margin-top:2px; }
+  .r-item{ padding:8px 0 8px 16px; border-left:3px solid #f3e2c2; border-bottom:1px solid var(--line); font-size:14px; display:flex; justify-content:space-between; }
+  .r-total{ text-align:right; font-weight:700; margin-top:8px; }
+  .chips{ display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
+  .chip{ padding:6px 12px; border-radius:999px; border:1px solid var(--line); background:#fff; font-size:14px; cursor:pointer; }
+  .chip.on{ background:var(--accent); border-color:var(--accent); color:#fff; }
+  .itemrow{ border:1px solid var(--line); border-radius:12px; padding:10px; margin-top:10px; background:#fff; }
+  .help{ font-size:13px; color:var(--muted); }
+  .empty{ color:var(--muted); text-align:center; padding:18px 0; }
+  #toast{ position:fixed; left:50%; bottom:22px; transform:translateX(-50%); background:#2b2118; color:#fff; padding:10px 16px; border-radius:999px; font-size:14px; display:none; max-width:90vw; text-align:center; }
+  .testband{ background:#fff3d6; border:1px solid #e8cf8f; color:#6b5410; border-radius:10px; padding:8px 12px; font-size:13px; margin-bottom:14px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🧾 Receipt Pool TEST</h1>
+  <p>Split version test · page on GitHub Pages · data in a copied Google Sheet</p>
+</header>
+<main>
+  <div class="testband">This is a test copy. It reads and writes a copied database only, and alert emails from it can only reach Lorenz. The real Receipt Pool is untouched.</div>
+
+  <section id="pinView" class="card">
+    <h2 style="margin-top:0">Enter the group PIN</h2>
+    <label class="f" for="pinInput">PIN</label>
+    <input id="pinInput" type="password" inputmode="numeric" autocomplete="off" placeholder="4 digit PIN">
+    <div style="margin-top:12px"><button id="unlockBtn" class="primary" style="width:100%">Unlock</button></div>
+    <p id="pinMsg" class="help"></p>
+  </section>
+
+  <section id="appView" hidden>
+    <div class="monthbar">
+      <button id="prevMonth" type="button">‹ Prev</button>
+      <h2 id="monthLabel">Month</h2>
+      <button id="nextMonth" type="button">Next ›</button>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0">Pool totals</h3>
+      <div id="monthSummary"><div class="empty">Loading…</div></div>
+      <div id="settlements" style="margin-top:10px"></div>
+    </div>
+
+    <div class="row" style="margin-bottom:12px">
+      <button id="addBtn" class="primary grow" type="button">Add a receipt</button>
+      <button id="refreshBtn" type="button">Refresh</button>
+    </div>
+
+    <div id="receiptList"></div>
+
+    <div id="formCard" class="card" hidden>
+      <h3 id="formTitle" style="margin-top:0">Add a receipt</h3>
+      <label class="f" for="fPlace">Receipt or bill name</label>
+      <input id="fPlace" type="text" placeholder="Where was this?">
+      <label class="f" for="fDate">Date</label>
+      <input id="fDate" type="text" inputmode="numeric" placeholder="Year month day, like 2025-02-14">
+      <label class="f">Who paid</label>
+      <div id="payerChips" class="chips"></div>
+      <label class="f">Who is on this receipt</label>
+      <div id="partChips" class="chips"></div>
+      <label class="f" for="fCategory">Category</label>
+      <div id="catChips" class="chips"></div>
+      <div id="itemsWrap"></div>
+      <div style="margin-top:10px"><button id="addItemBtn" type="button">Add an item</button></div>
+      <div class="row" style="margin-top:12px">
+        <div class="grow"><label class="f" for="fTax">Tax $</label><input id="fTax" type="number" step="0.01" min="0" value="0"></div>
+        <div class="grow"><label class="f" for="fTip">Tip $</label><input id="fTip" type="number" step="0.01" min="0" value="0"></div>
+      </div>
+      <p class="help" id="formTotal"></p>
+      <div class="row" style="margin-top:8px">
+        <button id="saveBtn" class="primary grow" type="button">Save receipt</button>
+        <button id="cancelBtn" type="button">Cancel</button>
+      </div>
+      <p id="formMsg" class="help"></p>
+    </div>
+  </section>
+  <p class="help" style="text-align:center">Receipt Pool split test · front end v1 · the live app stays at its usual address</p>
+</main>
+<div id="toast"></div>
+
+<script>
+var API = 'https://script.google.com/macros/s/AKfycbw_As9mX0ZmeNOO2L0zhogK9pm6gIf3rrrKkilt7-8vguIfTVzFIz3uhhgkz0Zvzg_w/exec';
+var S = { pin: '', roster: [], monthDate: null, monthData: { receipts: [], settled: [] }, editingId: null, form: null };
+var CATS = [ ['Dine-Out','🍽️ Dine Out'], ['Groceries','🛒 Groceries'], ['Utilities','💡 Utilities'], ['Shopping','🛍️ Shopping'], ['Pharmacy','💊 Pharmacy'], ['Gas-Auto','⛽ Gas and Auto'], ['Other','🧾 Other'] ];
+function $(id){ return document.getElementById(id); }
+function esc(t){ return String(t == null ? '' : t).replace(/[&<>"']/g, function(c){ return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]; }); }
+function round(v){ return Math.round((Number(v) || 0) * 100) / 100; }
+function money(v){ return '$' + (Number(v) || 0).toFixed(2); }
+function toast(msg){ var t = $('toast'); t.textContent = msg; t.style.display = 'block'; setTimeout(function(){ t.style.display = 'none'; }, 3200); }
+function monthKey(d){ return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
+function monthLabel(d){ return d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }); }
+function fmtDate(ds){ var p = String(ds || '').split('-'); return p.length === 3 ? p[1] + '/' + p[2] + '/' + p[0] : String(ds || ''); }
+
+function api(params){
+  var q = new URLSearchParams();
+  Object.keys(params).forEach(function(k){ q.set(k, params[k]); });
+  q.set('pin', S.pin);
+  return fetch(API + '?' + q.toString(), { method: 'GET', redirect: 'follow' })
+    .then(function(r){ return r.text(); })
+    .then(function(txt){
+      var d;
+      try { d = JSON.parse(txt); } catch (e) { throw new Error('The data service sent back something unreadable.'); }
+      if (!d || d.ok !== true) throw new Error((d && d.error) || 'The data service said no.');
+      return d;
+    });
+}
+
+/* Share math copied from the real app so totals match it exactly. */
+function calc(r){var people={},subtotal=0,taxSub=0;(r.participants||[]).forEach(function(n){people[n]={items:0,taxed:0,total:0}});(r.items||[]).forEach(function(x){var p=Number(x.price)||0;subtotal+=p;var s=(x.shared_by||[]).filter(function(n){return people[n]});if(!s.length&&r.payer&&people[r.payer])s=[r.payer];if(s.length)s.forEach(function(n){people[n].items+=p/s.length;if(x.taxed!==false)people[n].taxed+=p/s.length});if(x.taxed!==false)taxSub+=p});var tax=Number(r.tax)||0,tip=Number(r.tip)||0;Object.keys(people).forEach(function(n){var q=people[n];q.total=q.items+(taxSub>0?q.taxed/taxSub*tax:(subtotal?q.items/subtotal*tax:0))+(subtotal?q.items/subtotal*tip:0)});return{people:people,subtotal:subtotal,total:subtotal+tax+tip}}
+function totals(rs){var t={};rs.forEach(function(r){(r.participants||[]).forEach(function(n){if(!t[n])t[n]={owes:0,paid:0,net:0}});var c=calc(r);Object.keys(c.people).forEach(function(n){if(!t[n])t[n]={owes:0,paid:0,net:0};t[n].owes+=c.people[n].total});if(r.payer){if(!t[r.payer])t[r.payer]={owes:0,paid:0,net:0};t[r.payer].paid+=Number(r.total)||c.total}});Object.keys(t).forEach(function(n){t[n].owes=round(t[n].owes);t[n].paid=round(t[n].paid);t[n].net=round(t[n].paid-t[n].owes)});return t}
+function settlementLines(t){var c=[],d=[];Object.keys(t).forEach(function(n){if(t[n].net>.009)c.push({name:n,amount:t[n].net});if(t[n].net<-.009)d.push({name:n,amount:-t[n].net})});c.sort(function(a,b){return b.amount-a.amount});d.sort(function(a,b){return b.amount-a.amount});var out=[],i=0,j=0;while(i<c.length&&j<d.length){var a=Math.min(c[i].amount,d[j].amount);out.push(d[j].name+' pays '+c[i].name+' '+money(a));c[i].amount=round(c[i].amount-a);d[j].amount=round(d[j].amount-a);if(c[i].amount<.01)i++;if(d[j].amount<.01)j++}return out}
+function catLabel(c){ for (var i = 0; i < CATS.length; i++) if (CATS[i][0] === c) return CATS[i][1]; return '🧾 ' + (c || 'Other'); }
+
+function renderMonth(){
+  $('monthLabel').textContent = monthLabel(S.monthDate);
+  var rs = S.monthData.receipts || [];
+  var t = totals(rs);
+  var names = Object.keys(t).sort();
+  $('monthSummary').innerHTML = names.length ? names.map(function(n){
+    var z = t[n].net;
+    return '<div class="summary-row"><div><strong>' + esc(n) + '</strong><div class="metrics">owes <b>' + money(t[n].owes) + '</b> · paid <b>' + money(t[n].paid) + '</b></div></div><div class="' + (z > .009 ? 'positive' : z < -.009 ? 'negative' : '') + '"><b>' + (z > .009 ? '+' : '') + money(z) + '</b></div></div>';
+  }).join('') : '<div class="empty">No receipts this month.</div>';
+  var lines = settlementLines(t);
+  $('settlements').innerHTML = '<h4 style="margin:6px 0">Suggested payments</h4>' + (lines.length ? lines.map(function(x){ return '<p style="margin:4px 0">' + esc(x) + '</p>'; }).join('') : '<p class="help">All balanced.</p>');
+  $('receiptList').innerHTML = rs.length ? rs.map(function(r){
+    var items = (r.items || []).map(function(it){
+      return '<div class="r-item"><span>' + esc(it.name) + '</span><span>' + money(it.price) + '</span></div>';
+    }).join('');
+    return '<div class="card"><div class="r-head"><span class="r-place">' + esc(r.place) + '</span><span>' + money(r.total) + '</span></div>' +
+      '<div class="r-meta">' + esc(catLabel(r.category)) + ' · ' + fmtDate(r.receipt_date) + ' · paid by ' + esc(r.payer) + '</div>' +
+      items +
+      '<div class="row" style="margin-top:10px"><button type="button" data-edit="' + esc(r.id) + '">Edit receipt</button></div></div>';
+  }).join('') : '<div class="card"><div class="empty">No receipts this month yet.</div></div>';
+  $('receiptList').querySelectorAll('[data-edit]').forEach(function(b){
+    b.onclick = function(){ openForm(b.getAttribute('data-edit')); };
+  });
+}
+
+function loadMonth(){
+  $('monthSummary').innerHTML = '<div class="empty">Loading…</div>';
+  return api({ action: 'month', month: monthKey(S.monthDate) }).then(function(d){
+    S.monthData = { receipts: d.receipts || [], settled: d.settled || [] };
+    renderMonth();
+  }).catch(function(e){ toast(e.message); $('monthSummary').innerHTML = '<div class="empty">Could not load this month.</div>'; });
+}
+
+function chips(el, names, selected, single, onchange){
+  el.innerHTML = '';
+  names.forEach(function(n){
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'chip' + (selected.indexOf(n) >= 0 ? ' on' : ''); b.textContent = n;
+    b.onclick = function(){
+      var i = selected.indexOf(n);
+      if (single) { selected.length = 0; selected.push(n); }
+      else if (i >= 0) selected.splice(i, 1); else selected.push(n);
+      chips(el, names, selected, single, onchange);
+      if (onchange) onchange();
+    };
+    el.appendChild(b);
+  });
+}
+
+function openForm(id){
+  var r = null;
+  if (id) { (S.monthData.receipts || []).forEach(function(x){ if (x.id === id) r = x; }); if (!r) { toast('That receipt could not be found.'); return; } }
+  S.editingId = id || null;
+  S.form = r ? JSON.parse(JSON.stringify(r)) : {
+    place: '', receipt_date: monthKey(S.monthDate) + '-' + String(new Date().getDate()).padStart(2, '0'),
+    payer: S.roster[0] || '', participants: S.roster.slice(), tax: 0, tip: 0, category: 'Dine-Out',
+    items: [{ name: '', price: 0, shared_by: S.roster.slice(), taxed: true }]
+  };
+  if (!Array.isArray(S.form.items) || !S.form.items.length) S.form.items = [{ name: '', price: 0, shared_by: S.form.participants.slice(), taxed: true }];
+  $('formTitle').textContent = id ? 'Edit receipt' : 'Add a receipt';
+  $('fPlace').value = S.form.place || '';
+  $('fDate').value = S.form.receipt_date || '';
+  $('fTax').value = S.form.tax || 0;
+  $('fTip').value = S.form.tip || 0;
+  $('formMsg').textContent = '';
+  drawFormChips(); drawItems(); updateFormTotal();
+  $('formCard').hidden = false;
+  $('formCard').scrollIntoView({ behavior: 'smooth' });
+}
+function drawFormChips(){
+  chips($('payerChips'), S.roster, [S.form.payer], true, function(){ S.form.payer = lastChip($('payerChips')); syncPayer(); });
+  chips($('partChips'), S.roster, S.form.participants, false, function(){ S.form.participants = onChips($('partChips')); });
+  chips($('catChips'), CATS.map(function(c){ return c[0]; }), [S.form.category || 'Other'], true, function(){ S.form.category = lastChip($('catChips')); drawFormChips(); });
+}
+function onChips(el){ var out = []; el.querySelectorAll('.chip.on').forEach(function(c){ out.push(c.textContent); }); return out; }
+function lastChip(el){ var on = onChips(el); return on.length ? on[on.length - 1] : ''; }
+function syncPayer(){ var on = onChips($('payerChips')); if (on.length) S.form.payer = on[on.length - 1]; }
+function drawItems(){
+  var w = $('itemsWrap'); w.innerHTML = '<label class="f">Items</label>';
+  S.form.items.forEach(function(it, idx){
+    var div = document.createElement('div'); div.className = 'itemrow';
+    div.innerHTML = '<div class="row"><input type="text" class="grow" data-f="name" placeholder="Item name" value="' + esc(it.name) + '">' +
+      '<input type="number" step="0.01" min="0" style="width:110px" data-f="price" value="' + (it.price || 0) + '">' +
+      '<button type="button" data-f="del">Remove</button></div>' +
+      '<div class="chips" data-f="sharers"></div>' +
+      '<label class="help" style="display:block;margin-top:6px"><input type="checkbox" data-f="taxed"' + (it.taxed !== false ? ' checked' : '') + '> Tax applies to this item</label>';
+    div.querySelector('[data-f="name"]').oninput = function(e){ it.name = e.target.value; };
+    div.querySelector('[data-f="price"]').oninput = function(e){ it.price = Number(e.target.value) || 0; updateFormTotal(); };
+    div.querySelector('[data-f="taxed"]').onchange = function(e){ it.taxed = e.target.checked; };
+    div.querySelector('[data-f="del"]').onclick = function(){ S.form.items.splice(idx, 1); drawItems(); updateFormTotal(); };
+    chips(div.querySelector('[data-f="sharers"]'), S.form.participants.length ? S.form.participants : S.roster, it.shared_by || [], false, function(){ it.shared_by = onChips(div.querySelector('[data-f="sharers"]')); });
+    w.appendChild(div);
+  });
+}
+function updateFormTotal(){
+  var sub = 0; (S.form.items || []).forEach(function(it){ sub += Number(it.price) || 0; });
+  var tot = sub + (Number($('fTax').value) || 0) + (Number($('fTip').value) || 0);
+  $('formTotal').textContent = 'Items subtotal ' + money(sub) + ' · receipt total ' + money(tot);
+}
+function closeForm(){ $('formCard').hidden = true; S.editingId = null; }
+
+$('unlockBtn').onclick = function(){
+  var pin = $('pinInput').value.trim();
+  if (!pin) { $('pinMsg').textContent = 'Type the PIN first.'; return; }
+  S.pin = pin;
+  $('unlockBtn').disabled = true; $('pinMsg').textContent = 'Checking…';
+  api({ action: 'verify' }).then(function(){
+    return api({ action: 'boot', month: monthKey(new Date()) });
+  }).then(function(d){
+    S.roster = d.roster || [];
+    S.monthDate = new Date(); S.monthDate.setDate(1);
+    S.monthData = { receipts: d.receipts || [], settled: d.settled || [] };
+    $('pinView').hidden = true; $('appView').hidden = false;
+    renderMonth();
+  }).catch(function(e){
+    $('pinMsg').textContent = 'Could not unlock: ' + e.message;
+  }).finally(function(){ $('unlockBtn').disabled = false; });
+};
+$('pinInput').addEventListener('keydown', function(e){ if (e.key === 'Enter') $('unlockBtn').click(); });
+$('prevMonth').onclick = function(){ S.monthDate.setMonth(S.monthDate.getMonth() - 1); closeForm(); loadMonth(); };
+$('nextMonth').onclick = function(){ S.monthDate.setMonth(S.monthDate.getMonth() + 1); closeForm(); loadMonth(); };
+$('refreshBtn').onclick = function(){ loadMonth(); };
+$('addBtn').onclick = function(){ openForm(null); };
+$('cancelBtn').onclick = closeForm;
+$('addItemBtn').onclick = function(){ S.form.items.push({ name: '', price: 0, shared_by: S.form.participants.slice(), taxed: true }); drawItems(); };
+$('fTax').oninput = updateFormTotal; $('fTip').oninput = updateFormTotal;
+$('saveBtn').onclick = function(){
+  S.form.place = $('fPlace').value.trim();
+  S.form.receipt_date = $('fDate').value.trim();
+  S.form.tax = Number($('fTax').value) || 0;
+  S.form.tip = Number($('fTip').value) || 0;
+  syncPayer(); S.form.participants = onChips($('partChips'));
+  if (!S.form.place) { $('formMsg').textContent = 'Give the receipt a name first.'; return; }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(S.form.receipt_date)) { $('formMsg').textContent = 'The date needs the year month day shape, like 2025-02-14.'; return; }
+  var items = S.form.items.filter(function(it){ return String(it.name || '').trim() && (Number(it.price) || 0) > 0; })
+    .map(function(it){ return { name: String(it.name).trim(), price: Number(it.price) || 0, shared_by: it.shared_by || [], taxed: it.taxed !== false }; });
+  if (!items.length) { $('formMsg').textContent = 'Add at least one item with a name and a price.'; return; }
+  var payload = { receipt: { place: S.form.place, receipt_date: S.form.receipt_date, payer: S.form.payer, participants: S.form.participants, tax: S.form.tax, tip: S.form.tip, note: '', category: S.form.category || 'Other', photo_id: '' }, items: items };
+  var btn = $('saveBtn'); btn.disabled = true; $('formMsg').textContent = 'Saving…';
+  var call;
+  if (S.editingId) { payload.id = S.editingId; call = api({ action: 'updateReceipt', data: JSON.stringify(payload) }); }
+  else call = api({ action: 'saveReceipt', data: JSON.stringify(payload) });
+  call.then(function(res){
+    toast(S.editingId ? 'Receipt updated' : 'Receipt saved');
+    closeForm();
+    var p = String(S.form.receipt_date).split('-');
+    S.monthDate = new Date(Number(p[0]), Number(p[1]) - 1, 1);
+    return loadMonth();
+  }).catch(function(e){ $('formMsg').textContent = 'Save failed: ' + e.message; })
+  .finally(function(){ btn.disabled = false; });
+};
+</script>
+</body>
+</html>
