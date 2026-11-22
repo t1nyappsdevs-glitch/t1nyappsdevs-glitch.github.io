@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2317201d'/%3E%3Crect x='10' y='9' width='27' height='40' rx='5' fill='%23f5b942'/%3E%3Crect x='15' y='15' width='17' height='12' rx='2.5' fill='%2317201d'/%3E%3Cpath d='M40 17h3l6 7v15a6 6 0 0 1-12 0v-7h4v7a2 2 0 0 0 4 0V25l-5-5z' fill='%23f5b942'/%3E%3Crect x='7' y='49' width='33' height='5' rx='2.5' fill='%23f5b942'/%3E%3Ccircle cx='45' cy='45' r='14' fill='%23e4571d' stroke='%2317201d' stroke-width='3'/%3E%3Ctext x='45' y='52.5' text-anchor='middle' font-family='Arial, sans-serif' font-size='22' font-weight='800' fill='%23ffffff'%3E$%3C/text%3E%3C/svg%3E" />
+<title>Gas Locator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@500;600;700&family=Public+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    color-scheme: light dark;
+    --bg:#eef1f0;
+    --surface:#ffffff;
+    --surface2:#f7f8f7;
+    --ink:#17201d;
+    --muted:#5b6b65;
+    --line:#dde3e0;
+    --accent:#e4571d;
+    --accent-dark:#c74310;
+    --accent-ink:#ffffff;
+    --green:#137a4a;
+    --green-bg:#e6f4ec;
+    --amber-bg:#fff3e6;
+    --amber-ink:#8a4a12;
+    --header-bg:#17201d;
+    --header-ink:#ffffff;
+    --header-muted:#b9c6c0;
+    --shadow:0 6px 24px rgba(23,32,29,.08);
+    --radius:16px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#101514;
+      --surface:#1a2220;
+      --surface2:#212b28;
+      --ink:#eef3f1;
+      --muted:#9fb0a8;
+      --line:#2e3a36;
+      --accent:#ff6b2c;
+      --accent-dark:#ff6b2c;
+      --green:#4ade8a;
+      --green-bg:#143626;
+      --amber-bg:#3a2a16;
+      --amber-ink:#f5c07a;
+      --header-bg:#0c100f;
+      --shadow:0 6px 24px rgba(0,0,0,.35);
+    }
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"Public Sans",system-ui,sans-serif;line-height:1.45}
+  button,input{font:inherit}
+  button,[role="button"]{min-height:48px}
+  a{min-height:48px}
+  .wrap{max-width:600px;margin:0 auto;padding:0 14px 28px}
+  /* Header */
+  .hero{background:var(--header-bg);color:var(--header-ink);margin:0 -14px;padding:22px 18px 20px;border-radius:0 0 22px 22px}
+  .hero-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+  .brand-block{display:flex;align-items:flex-start;gap:13px;min-width:0}
+  .logo-badge{flex:none;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);border-radius:16px;padding:9px;line-height:0}
+  h1{font-family:"Barlow Condensed",sans-serif;font-size:44px;line-height:.95;letter-spacing:.02em;margin:0;text-transform:uppercase;font-weight:700}
+  .hero-sub{color:var(--header-muted);font-size:15px;margin:8px 0 0;max-width:34ch}
+  .hero-sub strong{color:#fff;font-weight:700}
+  .checked-pill{flex:none;background:#f5b942;color:#1a1a1a;font-weight:800;font-size:13px;line-height:1.2;padding:9px 11px;border-radius:999px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.25)}
+  .checked-pill span{display:block;font-weight:600;font-size:11px;letter-spacing:.04em;text-transform:uppercase;opacity:.75}
+  .hero-stats{display:flex;gap:10px;margin-top:16px}
+  .stat{flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:10px 12px}
+  .stat-label{font-size:12px;color:var(--header-muted);font-weight:600}
+  .stat-value{font-family:"IBM Plex Mono",monospace;font-weight:700;font-size:20px;margin-top:2px}
+  .stat-value small{font-size:12px;font-family:"Public Sans",sans-serif;font-weight:600;color:var(--header-muted)}
+  /* Action card */
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-top:14px}
+  .card h2{font-size:17px;margin:0 0 4px;font-weight:800;letter-spacing:-.01em}
+  .card p{margin:0;color:var(--muted);font-size:14px}
+  .btn-locate{margin-top:14px;width:100%;border:0;border-radius:14px;background:var(--accent);color:var(--accent-ink);font-weight:800;font-size:18px;padding:16px 16px;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;box-shadow:0 8px 20px rgba(228,87,29,.28)}
+  .btn-locate:active{background:var(--accent-dark);transform:translateY(1px)}
+  .btn-locate svg{flex:none}
+  .locate-status{margin-top:10px;font-size:13px;color:var(--muted);min-height:18px;text-align:center}
+  .or-row{display:flex;align-items:center;gap:12px;margin:16px 0 12px;color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+  .or-row::before,.or-row::after{content:"";flex:1;height:1px;background:var(--line)}
+  .search-row{display:flex;gap:8px}
+  .search-row input{flex:1;min-width:0;border:1.5px solid var(--line);background:var(--surface2);color:var(--ink);border-radius:12px;padding:13px 14px;font-size:16px;min-height:52px}
+  .search-row input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+  .btn-search{flex:none;border:0;border-radius:12px;background:var(--ink);color:var(--bg);background:var(--header-bg);color:#fff;font-weight:800;padding:0 20px;min-height:52px;cursor:pointer;font-size:16px}
+  @media (prefers-color-scheme: dark){ .btn-search{background:#eef3f1;color:#101514} }
+  .hint{margin-top:10px;font-size:13px;color:var(--muted)}
+  /* Snapshot */
+  .section-head{margin:22px 2px 0;display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .section-head h2{font-family:"Barlow Condensed",sans-serif;font-size:30px;text-transform:uppercase;letter-spacing:.02em;margin:0;line-height:1}
+  .section-head p{margin:4px 0 0;color:var(--muted);font-size:14px;width:100%}
+  .note-box{margin-top:12px;background:var(--amber-bg);color:var(--amber-ink);border-radius:12px;padding:12px 14px;font-size:14px;font-weight:600;line-height:1.5}
+  .note-box strong{font-weight:800}
+  /* Toggle */
+  .toggle{display:flex;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px;margin-top:14px;box-shadow:var(--shadow)}
+  .toggle button{flex:1;border:0;background:transparent;color:var(--muted);font-weight:800;font-size:15px;border-radius:999px;padding:11px 8px;cursor:pointer;min-height:48px}
+  .toggle button[aria-pressed="true"]{background:var(--header-bg);color:#fff}
+  @media (prefers-color-scheme: dark){ .toggle button[aria-pressed="true"]{background:#eef3f1;color:#101514} }
+  .toggle-caption{font-size:13px;color:var(--muted);margin:8px 2px 0;text-align:center}
+  .sort-toggle{margin-top:9px}
+  .sort-toggle button{font-size:14px;padding:11px 4px;line-height:1.2}
+  /* Brand filter */
+  .filter-label{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:18px 2px 0}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px}
+  .chip{border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font-weight:700;font-size:14px;border-radius:999px;padding:10px 15px;cursor:pointer;min-height:44px;box-shadow:var(--shadow)}
+  .chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+  .result-count{font-size:13px;color:var(--muted);margin:12px 2px 0;font-weight:600}
+  /* Station list */
+  .list{margin-top:10px;display:flex;flex-direction:column;gap:10px}
+  .station{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);display:flex;gap:12px;align-items:flex-start}
+  .station.is-cheapest{border:2px solid var(--green);padding:13px}
+  .station-main{flex:1;min-width:0}
+  .station-name{font-weight:800;font-size:16px;line-height:1.25;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .badge{font-size:11px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;background:var(--green-bg);color:var(--green);padding:4px 8px;border-radius:999px}
+  .station-addr{color:var(--muted);font-size:14px;margin-top:2px}
+  .dist-line{margin-top:6px;font-size:13px;font-weight:800;color:var(--accent-dark)}
+  @media (prefers-color-scheme: dark){ .dist-line{color:var(--accent)} }
+  .station-extra{color:var(--muted);font-size:13px;margin-top:6px}
+  .source-line{color:var(--muted);font-size:12px;font-weight:600;margin-top:7px}
+  .save-line{margin-top:7px;font-size:13px;font-weight:700;color:var(--green)}
+  .save-line.neutral{color:var(--muted);font-weight:600}
+  .price-col{flex:none;text-align:right}
+  .price{font-family:"IBM Plex Mono",monospace;font-size:26px;font-weight:700;line-height:1;letter-spacing:-.02em}
+  .price small{font-size:14px;color:var(--muted);font-weight:600}
+  .price-label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+  .price-none{font-size:14px;font-weight:700;color:var(--muted);max-width:110px;line-height:1.3}
+  .btn-dir{margin-top:10px;display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1.5px solid var(--line);color:var(--ink);text-decoration:none;font-weight:800;font-size:14px;padding:10px 14px;border-radius:10px;min-height:44px}
+  .btn-dir:active{border-color:var(--accent);color:var(--accent)}
+  .foot{margin-top:18px;color:var(--muted);font-size:13px;line-height:1.6;padding:0 2px}
+  .foot strong{color:var(--ink)}
+  @media (max-width:380px){
+    h1{font-size:38px}
+    .price{font-size:23px}
+    .hero-stats{flex-direction:column}
+    .logo-badge svg{width:44px;height:44px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <div class="hero-top">
+      <div class="brand-block">
+        <div class="logo-badge" aria-hidden="true">
+          <svg width="52" height="52" viewBox="0 0 64 64" fill="none" aria-hidden="true"><rect x="10" y="9" width="27" height="40" rx="5" fill="#f5b942"/><rect x="15" y="15" width="17" height="12" rx="2.5" fill="#17201d"/><rect x="15" y="32" width="17" height="4" rx="2" fill="#17201d" opacity=".5"/><rect x="15" y="39" width="17" height="4" rx="2" fill="#17201d" opacity=".3"/><path d="M40 17h3l6 7v15a6 6 0 0 1-12 0v-7h4v7a2 2 0 0 0 4 0V25l-5-5z" fill="#f5b942"/><rect x="7" y="49" width="33" height="5" rx="2.5" fill="#f5b942"/><circle cx="45" cy="45" r="14" fill="#e4571d" stroke="#17201d" stroke-width="3"/><text x="45" y="52.5" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="800" fill="#ffffff">$</text></svg>
+        </div>
+        <div>
+          <h1>Gas Locator</h1>
+        </div>
+      </div>
+      <div class="checked-pill"><span>Checked</span>Nov 21 2026</div>
+    </div>
+    <div class="hero-stats">
+      <div class="stat">
+        <div class="stat-label">Lowest regular found</div>
+        <div class="stat-value">$3.159 <small>at Costco</small></div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Common price near home</div>
+        <div class="stat-value">$3.699 <small>regular</small></div>
+      </div>
+    </div>
+  </header>
+
+  <section class="card" aria-labelledby="find-now">
+    <h2 id="find-now">Find gas right now</h2>
+    <p>Tap Use My Location and the station list below sorts by the best mix of price and distance right on this page, with the distance on each card. Or search any ZIP or city to open Google Maps.</p>
+    <button class="btn-locate" id="locateBtn" type="button">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s-7-5.6-7-11a7 7 0 1 1 14 0c0 5.4-7 11-7 11Z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="3" fill="currentColor"/></svg>
+      Use My Location
+    </button>
+    <div class="locate-status" id="locateStatus" role="status" aria-live="polite"></div>
+
+    <div class="or-row">Or search a place</div>
+    <form id="searchForm">
+      <div class="search-row">
+        <input id="placeInput" type="text" inputmode="search" autocomplete="off" placeholder="Enter ZIP or city" aria-label="ZIP or city" />
+        <button class="btn-search" type="submit">Search</button>
+      </div>
+    </form>
+    <p class="hint">Try 85742, Marana, Tucson, or wherever you are headed next.</p>
+  </section>
+
+  <div class="section-head">
+    <h2>Checked near home</h2>
+    <p id="sortNote">Snapshot near home in Marana and Tucson. Sorted by lowest price until location is allowed, then by the best mix of price and distance.</p>
+  </div>
+
+  <div class="note-box"><strong>Checked Nov 21 2026.</strong> Prices are crowd sourced and the pump price is final proof. Always confirm at the pump before you fill up.</div>
+
+  <div class="toggle" role="group" aria-label="Fuel grade">
+    <button type="button" id="btnRegular" aria-pressed="true">Regular</button>
+    <button type="button" id="btnPremium" aria-pressed="false">Premium</button>
+  </div>
+  <p class="toggle-caption" id="toggleCaption">Showing regular prices checked on Nov 21 2026.</p>
+
+  <p class="filter-label" id="sortLabel">Sort by</p>
+  <div class="toggle sort-toggle" role="group" aria-labelledby="sortLabel">
+    <button type="button" id="btnSortPrice" aria-pressed="false">Price</button>
+    <button type="button" id="btnSortDistance" aria-pressed="false">Distance</button>
+    <button type="button" id="btnSortBoth" aria-pressed="true">Price + Distance</button>
+  </div>
+  <p class="toggle-caption" id="sortCaption">Best mix of low price and short distance once location is allowed. Until then the stations are shown in lowest price order.</p>
+
+  <p class="filter-label" id="filterLabel">Filter by brand</p>
+  <div class="chips" role="group" aria-labelledby="filterLabel" id="brandChips"></div>
+
+  <p class="result-count" id="resultCount" role="status"></p>
+
+  <div class="list" id="stationList"></div>
+
+  <p class="foot"><strong>About this snapshot.</strong> Prices above were checked on Nov 21 2026 near home. A station that says price not checked simply had no checked price for that grade on that day. Tap Directions on any station to open Google Maps directions to its address. Distances appear after you tap Use My Location or pick a sort that uses distance and allow the location prompt, and they are approximate. GasBuddy shows its prices only inside its app to signed in members, so this page uses the public sources named on each card.</p>
+
+</div>
+
+<script>
+var COMMON_REGULAR = 3.699;
+
+var STATIONS = [
+  { name: "Costco", brand: "Costco", address: "3901 W Costco Dr, Tucson", city: "Tucson", regular: 3.159, premium: 3.799, extra: "", source: "Costco warehouse page", lat: 32.326447, lng: -111.047431 },
+  { name: "Frys Fuel", brand: "Frys", address: "10510 N La Canada Dr, Tucson", city: "Tucson", regular: 3.359, premium: null, extra: "", source: "iExit listing", lat: 32.4026, lng: -111.0145 },
+  { name: "Circle K", brand: "Circle K", address: "10410 N La Canada Dr, Tucson", city: "Tucson", regular: 3.399, premium: null, extra: "", source: "iExit listing", lat: 32.4010, lng: -111.0140 },
+  { name: "Maverik", brand: "Maverik", address: "9171 W Tangerine Rd, Marana", city: "Marana", regular: 3.699, premium: null, extra: "", source: "iExit listing", lat: 32.4180, lng: -111.0960 },
+  { name: "QuikTrip", brand: "QuikTrip", address: "9400 W Tangerine Rd, Marana", city: "Marana", regular: 3.699, premium: null, extra: "", source: "iExit listing", lat: 32.4183, lng: -111.1040 },
+  { name: "Speedway", brand: "Speedway", address: "12030 N Dove Mountain Blvd, Marana", city: "Marana", regular: 3.699, premium: 4.399, extra: "Midgrade $4.099 and diesel $5.729 were also checked at this station.", source: "Speedway station listing", lat: 32.4530, lng: -111.0910 },
+  { name: "Circle K", brand: "Circle K", address: "11403 W Tangerine Rd, Marana", city: "Marana", regular: 3.699, premium: null, extra: "", source: "iExit listing", lat: 32.4175, lng: -111.1470 },
+  { name: "Circle K", brand: "Circle K", address: "13961 N Sandario Rd, Marana", city: "Marana", regular: 3.699, premium: null, extra: "", source: "iExit listing", lat: 32.3520, lng: -111.2040 }
+];
+
+var BRANDS = ["All", "Costco", "Frys", "Circle K", "Maverik", "QuikTrip", "Speedway"];
+
+var grade = "regular";
+var brandFilter = "All";
+var sortMode = "both";
+var userLoc = null;
+
+var listEl = document.getElementById("stationList");
+var captionEl = document.getElementById("toggleCaption");
+var sortCaptionEl = document.getElementById("sortCaption");
+var sortNoteEl = document.getElementById("sortNote");
+var resultCountEl = document.getElementById("resultCount");
+var chipsEl = document.getElementById("brandChips");
+var btnRegular = document.getElementById("btnRegular");
+var btnPremium = document.getElementById("btnPremium");
+var btnSortPrice = document.getElementById("btnSortPrice");
+var btnSortDistance = document.getElementById("btnSortDistance");
+var btnSortBoth = document.getElementById("btnSortBoth");
+
+function money(v){ return "$" + v.toFixed(3); }
+function money2(v){ return "$" + v.toFixed(2); }
+function directionsUrl(s){
+  var dest = s.name + " " + s.address + " AZ";
+  return "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(dest);
+}
+function distanceMi(lat1, lng1, lat2, lng2){
+  var R = 3958.8;
+  var dLat = (lat2 - lat1) * Math.PI / 180;
+  var dLng = (lng2 - lng1) * Math.PI / 180;
+  var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+function distLabel(d){
+  if(d < 0.1) return "Under 0.1 mi away";
+  return "About " + d.toFixed(1) + " mi away";
+}
+
+function compareByPrice(a, b){
+  var av = a.s[grade], bv = b.s[grade];
+  if(av === null && bv === null) return a.s.regular - b.s.regular;
+  if(av === null) return 1;
+  if(bv === null) return -1;
+  if(av !== bv) return av - bv;
+  return a.s.regular - b.s.regular;
+}
+function compareByDistance(a, b){
+  if(a.dist === null && b.dist === null) return compareByPrice(a, b);
+  if(a.dist === null) return 1;
+  if(b.dist === null) return -1;
+  if(a.dist !== b.dist) return a.dist - b.dist;
+  return compareByPrice(a, b);
+}
+function sortCaptionText(){
+  if(sortMode === "distance"){
+    return userLoc
+      ? "Nearest station first using your location."
+      : "Distance sorting needs location. Showing lowest price first until location is allowed.";
+  }
+  if(sortMode === "both"){
+    return userLoc
+      ? "Best mix of low price and short distance first. Each station is ranked on price and on distance and the two ranks are added together."
+      : "Best mix of low price and short distance once location is allowed. Until then the stations are shown in lowest price order.";
+  }
+  return "Lowest price first for the grade you picked.";
+}
+function sortNoteText(){
+  if(sortMode === "distance"){
+    return userLoc
+      ? "Snapshot near home in Marana and Tucson. Sorted nearest first from your location, and distances are approximate."
+      : "Snapshot near home in Marana and Tucson. Distance sorting needs location, so the list stays in lowest price order.";
+  }
+  if(sortMode === "both"){
+    return userLoc
+      ? "Snapshot near home in Marana and Tucson. Sorted by the best mix of low price and short distance."
+      : "Snapshot near home in Marana and Tucson. Sorted by lowest price until location is allowed, then by the best mix of price and distance.";
+  }
+  return "Snapshot near home in Marana and Tucson. Sorted cheapest first for the grade you pick.";
+}
+
+function render(){
+  var rows = [];
+  for(var k = 0; k < STATIONS.length; k++){
+    var st = STATIONS[k];
+    if(brandFilter !== "All" && st.brand !== brandFilter) continue;
+    var dist = userLoc ? distanceMi(userLoc.lat, userLoc.lng, st.lat, st.lng) : null;
+    rows.push({ s: st, dist: dist, priceRank: null, distRank: null, score: null });
+  }
+  if(sortMode === "distance" && userLoc){
+    rows.sort(compareByDistance);
+  } else if(sortMode === "both" && userLoc){
+    var priceSorted = rows.slice().sort(compareByPrice);
+    var lastPrice = null, lastPriceRank = 0;
+    for(var p = 0; p < priceSorted.length; p++){
+      if(priceSorted[p].s[grade] === null){ priceSorted[p].priceRank = null; continue; }
+      if(lastPrice === null || priceSorted[p].s[grade] !== lastPrice){ lastPriceRank = p + 1; lastPrice = priceSorted[p].s[grade]; }
+      priceSorted[p].priceRank = lastPriceRank;
+    }
+    var distSorted = rows.slice().sort(compareByDistance);
+    var lastDist = null, lastDistRank = 0;
+    for(var d = 0; d < distSorted.length; d++){
+      if(distSorted[d].dist === null){ distSorted[d].distRank = null; continue; }
+      if(lastDist === null || distSorted[d].dist !== lastDist){ lastDistRank = d + 1; lastDist = distSorted[d].dist; }
+      distSorted[d].distRank = lastDistRank;
+    }
+    for(var s2 = 0; s2 < rows.length; s2++){
+      if(rows[s2].priceRank !== null && rows[s2].distRank !== null){
+        rows[s2].score = rows[s2].priceRank + rows[s2].distRank;
+      } else {
+        rows[s2].score = null;
+      }
+    }
+    rows.sort(function(a, b){
+      if(a.score === null && b.score === null) return compareByPrice(a, b);
+      if(a.score === null) return 1;
+      if(b.score === null) return -1;
+      if(a.score !== b.score) return a.score - b.score;
+      return compareByDistance(a, b);
+    });
+  } else {
+    rows.sort(compareByPrice);
+  }
+
+  var cheapest = null;
+  for(var i = 0; i < rows.length; i++){
+    var pv = rows[i].s[grade];
+    if(pv !== null && (cheapest === null || pv < cheapest)) cheapest = pv;
+  }
+
+  var html = "";
+  for(var j = 0; j < rows.length; j++){
+    var s = rows[j].s;
+    var price = s[grade];
+    var isCheapest = price !== null && price === cheapest;
+    html += '<article class="station' + (isCheapest ? ' is-cheapest' : '') + '">';
+    html += '<div class="station-main">';
+    html += '<div class="station-name">' + s.name + (isCheapest ? ' <span class="badge">Cheapest found</span>' : '') + '</div>';
+    html += '<div class="station-addr">' + s.address + '</div>';
+    if(userLoc && rows[j].dist !== null){
+      html += '<div class="dist-line">' + distLabel(rows[j].dist) + '</div>';
+    }
+    if(grade === "regular" && price !== null){
+      if(price < COMMON_REGULAR){
+        var save = COMMON_REGULAR - price;
+        html += '<div class="save-line">Saves ' + money2(save) + ' per gallon vs the common ' + money(COMMON_REGULAR) + ' price</div>';
+      } else {
+        html += '<div class="save-line neutral">Matches the common price near home</div>';
+      }
+    }
+    if(s.extra){
+      html += '<div class="station-extra">' + s.extra + '</div>';
+    }
+    if(s.source){
+      html += '<div class="source-line">Source: ' + s.source + '</div>';
+    }
+    html += '<a class="btn-dir" href="' + directionsUrl(s) + '" target="_blank" rel="noopener">Directions <span aria-hidden="true">↗</span></a>';
+    html += '</div>';
+    html += '<div class="price-col">';
+    if(price !== null){
+      html += '<div class="price">' + money(price) + '</div>';
+      html += '<div class="price-label">' + (grade === "regular" ? "Regular" : "Premium") + '<br>per gallon</div>';
+    } else {
+      html += '<div class="price-none">Price not checked</div>';
+      html += '<div class="price-label">' + (grade === "regular" ? "Regular" : "Premium") + '</div>';
+    }
+    html += '</div>';
+    html += '</article>';
+  }
+  listEl.innerHTML = html;
+
+  captionEl.textContent = grade === "regular"
+    ? "Showing regular prices checked on Nov 21 2026."
+    : "Showing premium prices checked on Nov 21 2026. Price not checked means no premium price was checked for that station.";
+
+  sortNoteEl.textContent = sortNoteText();
+  sortCaptionEl.textContent = sortCaptionText();
+  btnSortPrice.setAttribute("aria-pressed", sortMode === "price" ? "true" : "false");
+  btnSortDistance.setAttribute("aria-pressed", sortMode === "distance" ? "true" : "false");
+  btnSortBoth.setAttribute("aria-pressed", sortMode === "both" ? "true" : "false");
+
+  if(brandFilter === "All"){
+    resultCountEl.textContent = "Showing all " + rows.length + " stations.";
+  } else {
+    resultCountEl.textContent = "Showing " + rows.length + " " + brandFilter + (rows.length === 1 ? " station." : " stations.");
+  }
+
+  var chipBtns = chipsEl.getElementsByTagName("button");
+  for(var c = 0; c < chipBtns.length; c++){
+    chipBtns[c].setAttribute("aria-pressed", chipBtns[c].getAttribute("data-brand") === brandFilter ? "true" : "false");
+  }
+}
+
+/* Brand filter chips */
+(function buildChips(){
+  var html = "";
+  for(var i = 0; i < BRANDS.length; i++){
+    html += '<button type="button" class="chip" data-brand="' + BRANDS[i] + '" aria-pressed="' + (BRANDS[i] === "All" ? "true" : "false") + '">' + BRANDS[i] + '</button>';
+  }
+  chipsEl.innerHTML = html;
+  var btns = chipsEl.getElementsByTagName("button");
+  for(var j = 0; j < btns.length; j++){
+    btns[j].addEventListener("click", function(){
+      brandFilter = this.getAttribute("data-brand");
+      render();
+    });
+  }
+})();
+
+function setGrade(g){
+  grade = g;
+  btnRegular.setAttribute("aria-pressed", g === "regular" ? "true" : "false");
+  btnPremium.setAttribute("aria-pressed", g === "premium" ? "true" : "false");
+  render();
+}
+btnRegular.addEventListener("click", function(){ setGrade("regular"); });
+btnPremium.addEventListener("click", function(){ setGrade("premium"); });
+render();
+
+/* Location request shared by the locate button and the sort row */
+var locateBtn = document.getElementById("locateBtn");
+var locateStatus = document.getElementById("locateStatus");
+function requestLocation(fromLocateButton){
+  function locationFailed(){
+    locateStatus.textContent = "Location was not allowed or is not available. The list below still shows the checked prices near home, or use the ZIP or city search above.";
+    render();
+  }
+  if(!navigator.geolocation){
+    locationFailed();
+    return;
+  }
+  locateStatus.textContent = "Getting your location…";
+  navigator.geolocation.getCurrentPosition(function(pos){
+    userLoc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+    render();
+    if(fromLocateButton){
+      if(sortMode === "distance"){
+        locateStatus.textContent = "Location found. The station list below is now sorted nearest first, with the distance on each card.";
+      } else if(sortMode === "both"){
+        locateStatus.textContent = "Location found. The station list below now uses the best mix of price and distance, with the distance on each card.";
+      } else {
+        locateStatus.textContent = "Location found. Distances are now shown on each card and the list stays in lowest price order.";
+      }
+      document.getElementById("stationList").scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      locateStatus.textContent = "Location found. Distances are now shown on each card and the list uses your chosen sort.";
+    }
+  }, function(){
+    locationFailed();
+  }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
+}
+locateBtn.addEventListener("click", function(){ requestLocation(true); });
+
+/* Sort row */
+function setSort(mode){
+  sortMode = mode;
+  render();
+  if((mode === "distance" || mode === "both") && !userLoc){
+    requestLocation(false);
+  }
+}
+btnSortPrice.addEventListener("click", function(){ setSort("price"); });
+btnSortDistance.addEventListener("click", function(){ setSort("distance"); });
+btnSortBoth.addEventListener("click", function(){ setSort("both"); });
+
+/* ZIP or city search */
+document.getElementById("searchForm").addEventListener("submit", function(e){
+  e.preventDefault();
+  var q = document.getElementById("placeInput").value.trim();
+  if(!q){
+    locateStatus.textContent = "Type a ZIP or city above, then tap Search.";
+    document.getElementById("placeInput").focus();
+    return;
+  }
+  window.open("https://www.google.com/maps/search/gas+stations+near+" + encodeURIComponent(q), "_blank");
+});
+</script>
+</body>
+</html>
