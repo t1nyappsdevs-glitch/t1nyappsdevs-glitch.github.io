@@ -38,10 +38,10 @@ input,select,textarea{min-height:54px;font-size:16px}
 <script>
 /* Split transport shim for this GitHub hosted copy only. It stands in for
    google.script.run and carries the same request objects the page already
-   builds to the Receipt Pool TEST data service. The app code below is the
+   builds to the Receipt Pool data service. The app code below is the
    untouched v79 page. */
 (function () {
-  var API = 'https://script.google.com/macros/s/AKfycbw_As9mX0ZmeNOO2L0zhogK9pm6gIf3rrrKkilt7-8vguIfTVzFIz3uhhgkz0Zvzg_w/exec';
+  var API = 'https://script.google.com/macros/s/AKfycbywUk5wL_DklndmJ_yNHL_He3D8utjy3g0DeqVFL3SVWd5HnPVsS0oT0XyMVjBDqyad/exec';
   function makeRunner(onOk, onErr) {
     var runner = {
       withSuccessHandler: function (f) { return makeRunner(f, onErr); },
